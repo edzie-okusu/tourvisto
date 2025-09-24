@@ -12,10 +12,10 @@ const Headers = ({title, description}: Props) => {
         <header className='header'>
             <article>
                 <h1 className={cn('text-dark-200',
-                    location.pathname === '/admin1' ? 'text-2xl md:text-4xl font-bold': 'text-xl md:text-2xl font-semibold')}>{title}
+                    location.pathname === '/dashboard' ? 'text-2xl md:text-4xl font-bold': 'text-xl md:text-2xl font-semibold')}>{title}
                 </h1>
                 <p className={cn('text-gray-100 font-normal',
-                    location.pathname === '/admin1' ? 'text-2xl md:text-4xl font-bold': 'text-xl md:text-2xl font-semibold')}>{description}
+                    location.pathname === '/dashboard' ? 'text-2xl md:text-4xl font-bold': 'text-xl md:text-2xl font-semibold')}>{description}
                 </p>
             </article>
         </header>
