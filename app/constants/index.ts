@@ -688,3 +688,75 @@ export const RIGHT_CONFETTI = {
 //   top: 45px;
 //   right: 40px;
 // }
+
+export const user = {
+    name: 'Kwame',
+    email: 'contact@elletech.pro',
+    imageUrl: 'public/images/david.webp',
+}
+
+export const allTrips = [
+    {
+        id: 1,
+        name: 'Trip 1',
+        imageUrl: `/public/images/sample.jpeg`,
+        itinerary: [{ location: 'Paris'}],
+        tags: ['Relaxation', 'Culinary'],
+        travelStyle: 'Family',
+        estimatedPrice: `$${2000}`
+    },
+    {
+        id: 2,
+        name: 'Trip 2',
+        imageUrl: '/public/images/sample.jpeg',
+        itinerary: [{ location: 'Paris'}],
+        tags: ['Relaxation', 'Culinary'],
+        travelStyle: 'Family',
+        estimatedPrice: `$${2000}`
+    },
+    {
+        id: 3,
+        name: 'Trip 3',
+        imageUrl: '/public/images/sample.jpeg',
+        itinerary: [{ location: 'New York'}],
+        tags: ['Relaxation', 'Culinary'],
+        travelStyle: 'Family',
+        estimatedPrice: `$${2000}`
+    },
+    {
+        id: 4,
+        name: 'Trip 4',
+        imageUrl: '/public/images/sample.jpeg',
+        itinerary: [{ location: 'Moscow'}],
+        tags: ['Relaxation', 'Culinary'],
+        travelStyle: 'Family',
+        estimatedPrice: `$${2000}`
+    },
+    {
+        id: 5,
+        name: 'Trip 5',
+        imageUrl: '/public/images/sample.jpeg',
+        itinerary: [{ location: 'Accra'}],
+        tags: ['Relaxation', 'Culinary'],
+        travelStyle: 'Family',
+        estimatedPrice: `$${2000}`
+    }
+]
+
+export const dashboardStats = {
+    totalUsers: 0,
+    usersJoined: {
+        currentMonth: 0,
+        previousMonth: 0
+    },
+    totalTrips: 0,
+    tripsCreated: {
+        currentMonth: 0,
+        previousMonth: 0
+    },
+    userRole: {
+        total: 0,
+        currentMonth: 0,
+        previousMonth: 0
+    }
+}
