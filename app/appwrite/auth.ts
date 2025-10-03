@@ -1,7 +1,7 @@
 // import { ID, OAuthProvider, Query } from "appwrite";
 // import { account, database, appwriteConfig } from "~/appwrite/client";
 // import { redirect } from "react-router";
-
+//
 // export const getExistingUser = async (id: string) => {
 //   try {
 //     const { documents, total } = await database.listDocuments(
@@ -15,17 +15,17 @@
 //     return null;
 //   }
 // };
-
+//
 // export const storeUserData = async () => {
 //   try {
 //     const user = await account.get();
 //     if (!user) throw new Error("User not found");
-
+//
 //     const { providerAccessToken } = (await account.getSession("current")) || {};
 //     const profilePicture = providerAccessToken
 //       ? await getGooglePicture(providerAccessToken)
 //       : null;
-
+//
 //     const createdUser = await database.createDocument(
 //       appwriteConfig.databaseId,
 //       appwriteConfig.userCollectionId,
@@ -38,13 +38,13 @@
 //         joinedAt: new Date().toISOString(),
 //       }
 //     );
-
+//
 //     if (!createdUser.$id) redirect("/sign-in");
 //   } catch (error) {
 //     console.error("Error storing user data:", error);
 //   }
 // };
-
+//
 // const getGooglePicture = async (accessToken: string) => {
 //   try {
 //     const response = await fetch(
@@ -52,7 +52,7 @@
 //       { headers: { Authorization: `Bearer ${accessToken}` } }
 //     );
 //     if (!response.ok) throw new Error("Failed to fetch Google profile picture");
-
+//
 //     const { photos } = await response.json();
 //     return photos?.[0]?.url || null;
 //   } catch (error) {
@@ -60,7 +60,7 @@
 //     return null;
 //   }
 // };
-
+//
 // export const loginWithGoogle = async () => {
 //   try {
 //     account.createOAuth2Session(
@@ -72,7 +72,7 @@
 //     console.error("Error during OAuth2 session creation:", error);
 //   }
 // };
-
+//
 // export const logoutUser = async () => {
 //   try {
 //     await account.deleteSession("current");
@@ -80,12 +80,12 @@
 //     console.error("Error during logout:", error);
 //   }
 // };
-
+//
 // export const getUser = async () => {
 //   try {
 //     const user = await account.get();
 //     if (!user) return redirect("/sign-in");
-
+//
 //     const { documents } = await database.listDocuments(
 //       appwriteConfig.databaseId,
 //       appwriteConfig.userCollectionId,
@@ -94,7 +94,7 @@
 //         Query.select(["name", "email", "imageUrl", "joinedAt", "accountId"]),
 //       ]
 //     );
-
+//
 //     return documents.length > 0 ? documents[0] : redirect("/sign-in");
 //   } catch (error) {
 //     console.error("Error fetching user:", error);
