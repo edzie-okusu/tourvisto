@@ -7,7 +7,7 @@ import {getAuth} from 'firebase-admin/auth'
 const initFirebaseAdmin = () => {
     const apps = getApps();
 
-    const firebase_id= process.env.FIREBASE_PROJECT_ID;
+    const firebase_id= process.env.VITE_FIREBASE_PROJECT_ID;
     const firebase_client_email= process.env.FIREBASE_CLIENT_EMAIL;
     const firebase_private_key= process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 

@@ -16,10 +16,11 @@ interface login {
 const provider = new GoogleAuthProvider();
 
 provider.setCustomParameters({
-    prompt: 'select account',
-})
+    prompt: 'select_account',
+});
+provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
 
-export const loginWithGoogle = async ():Promise<{user:User, accessToken:string |undefined}> => {
+export const loginWithGoogle = async ():Promise<{user:User, accessToken:string}> => {
     try {
         const result = await signInWithPopup(auth, provider);
         const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -54,7 +55,7 @@ export const logOutUser = async () => {
     }
 }
 
-export const getUserPicture = async (accessToken: string|undefined) => {
+export const getUserPicture = async (accessToken: string) => {
     const endpoint = `https://people.googleapis.com/v1/users/me`;
     try {
         const response = await fetch(`${endpoint}?personFields=photos`, {
