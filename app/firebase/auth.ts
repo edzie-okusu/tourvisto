@@ -1,47 +1,30 @@
-import {GoogleAuthProvider, signInWithPopup, type User} from "@firebase/auth";
+
+import {GoogleAuthProvider, signInWithPopup, type User, signOut} from "@firebase/auth";
 import {auth, db} from "~/firebase/client";
-import {collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where} from "@firebase/firestore";
+import {collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where, updateDoc} from "@firebase/firestore";
 
 
 interface login {
     user:User,
     accessToken: string,
 }
-/**
- * @param accessToken
- * @param user
- * @returns
- */
 
 const provider = new GoogleAuthProvider();
 
 provider.setCustomParameters({
-    prompt: 'select_account',
-});
-provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+    prompt: 'select account',
+})
 
-export const loginWithGoogle = async ():Promise<{user:User, accessToken:string}> => {
+export const loginWithGoogle = async (): Promise<User> => {
     try {
         const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-
-        const accessToken = credential?.accessToken;
-        if(!accessToken) {
-            throw new Error('No accessToken');
-        }
-        const user = result?.user;
+        const user = result.user;
         console.log(user, 'Successfully logged in');
-
-        return {user, accessToken}
+        return user;
 
     } catch (error: any) {
         const errorCode = error.code;
         const errorMessage = error.message;
-        const email = error.customData.email;
-        const credential = GoogleAuthProvider.credentialFromError(error);
-
-        console.log(error)
-
         throw new Error(`Google Sign In Error: ${errorMessage} (code: ${errorCode})`);
 
     }
@@ -49,39 +32,14 @@ export const loginWithGoogle = async ():Promise<{user:User, accessToken:string}>
 
 export const logOutUser = async () => {
     try {
-
+        await signOut(auth);
+        console.log('User signed out successfully');
     } catch (e) {
-        console.log(e)
+        console.error('Error signing out: ', e)
     }
 }
 
-export const getUserPicture = async (accessToken: string) => {
-    const endpoint = `https://people.googleapis.com/v1/users/me`;
-    try {
-        const response = await fetch(`${endpoint}?personFields=photos`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        })
-
-        if (!response.ok) {
-            throw new Error(response.statusText);
-        }
-
-        const personData = await response?.json();
-
-        if (personData?.photos && personData.photos.length > 0) {
-            const primaryPhoto =  personData.photos[0]
-            return primaryPhoto.url
-        }
-
-        return null
-    } catch (e) {
-        console.log('Error getting Google picture',e)
-    }
-}
-
-export const storeUserData = async (user:User, imageUrl:string) => {
+export const storeUserData = async (user:User, imageUrl:string | null) => {
     try {
         const userData = {
             accountId: user.uid,
@@ -101,7 +59,6 @@ export const storeUserData = async (user:User, imageUrl:string) => {
         };
 
         await setDoc(doc(db, 'users', user.uid), userData, {merge: true});
-        // await db.collection('users').doc(user.uid).set(userData);
     } catch (e) {
         console.log(e)
     }
@@ -122,21 +79,28 @@ export const getExistingUserByEmail = async (email: string) => {
 
 export const handleGoogleSignIn = async () => {
     try {
-        const {user, accessToken} = await loginWithGoogle();
+        const user = await loginWithGoogle();
 
-        let profileImageUrl = null;
-        try {
-            profileImageUrl =  await getUserPicture(accessToken);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userSnapshot = await getDoc(userDocRef);
 
-        } catch(imageError) {
-            console.warn('Could not fetch Google People Api image, using default:',imageError);
-            profileImageUrl = user.photoURL;
+        if (userSnapshot.exists()) {
+            // If user exists, just update their last login time and profile info
+            await updateDoc(userDocRef, {
+                lastUpdated: serverTimestamp(),
+                imageUrl: user.photoURL || null,
+                name: user.displayName,
+            });
+            console.log('Returning user data updated.');
+
+        } else {
+            // If new user, create the full document
+            await storeUserData(user, user.photoURL || null);
+            console.log('New user data stored successfully');
         }
 
-        await storeUserData(user, profileImageUrl);
-        console.log('Successfully logged in');
     } catch (error) {
-        console.log(error)
+        console.error('An error occurred during Google Sign-In and data storage:', error);
         throw error;
     }
 }
@@ -161,12 +125,12 @@ const getUserData = async (userId:string) => {
     try {
         const userSnapshot = await getUserById(userId);
         if(userSnapshot.exists()) {
-           const userData = userSnapshot.data()
-           return {
-               id:userSnapshot.id,
-               ...userData,
-               dateJoined: userData.dateJoined?.toISOString() || userData.dateJoined
-           } ;
+            const userData = userSnapshot.data()
+            return {
+                id:userSnapshot.id,
+                ...userData,
+                dateJoined: userData.dateJoined?.toISOString() || userData.dateJoined
+            } ;
         }
 
         return null;
