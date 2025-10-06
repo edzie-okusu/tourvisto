@@ -3,9 +3,11 @@ import Headers from "~/components/Headers";
 import TripCard from "~/components/TripCard";
 import StatsCard from "~/components/StatsCard";
 import {dashboardStats, user, allTrips} from "~/constants";
+import {fetchUserProfile} from "~/firebase/auth";
+import {onAuthStateChanged} from "firebase/auth";
+import {auth} from "~/firebase/client";
 
 const Dashboard = () => {
-
 
     const {totalUsers, userRole, usersJoined,tripsCreated, totalTrips} = dashboardStats;
 

@@ -1,7 +1,24 @@
 import React from "react";
-import { Outlet } from "react-router";
+import {Outlet, redirect} from "react-router";
 import {SidebarComponent} from "@syncfusion/ej2-react-navigations";
 import {MobileSidebar, NavItems} from "~/components";
+import {onAuthStateChanged} from "firebase/auth";
+import {auth} from "~/firebase/client";
+
+export async function clientLoader() {
+    try {
+        const unsubscribe =  onAuthStateChanged(auth,(user) => {
+            if (user) {
+                redirect('/')
+            }
+
+        })
+
+        return() => unsubscribe;
+    } catch (e) {
+        console.log('Error fetching user', e)
+    }
+}
 
 const Admin_Layout = () => {
     return (

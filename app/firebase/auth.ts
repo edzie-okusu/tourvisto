@@ -105,7 +105,7 @@ export const handleGoogleSignIn = async () => {
     }
 }
 
-const getUserById = async (userId:string) => {
+export const getUserById = async (userId:string) => {
     try {
         const userDocRef = await doc(db, 'users', userId);
         const userSnapshot = await getDoc(userDocRef)
@@ -121,7 +121,7 @@ const getUserById = async (userId:string) => {
     }
 }
 
-const getUserData = async (userId:string) => {
+export const getUserData = async (userId:string) => {
     try {
         const userSnapshot = await getUserById(userId);
         if(userSnapshot.exists()) {
@@ -140,6 +140,6 @@ const getUserData = async (userId:string) => {
     }
 }
 
-const fetchUserProfile = async (userId:string) => {
+export const fetchUserProfile = async (userId:string) => {
     return await getUserData(userId);
 }
