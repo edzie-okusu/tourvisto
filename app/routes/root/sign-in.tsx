@@ -1,11 +1,32 @@
-import {Link} from "react-router";
+import {Link, useLocation, useNavigate} from "react-router";
 import {ButtonComponent} from "@syncfusion/ej2-react-buttons";
 import {handleGoogleSignIn} from "~/firebase/auth";
+import {useEffect} from "react";
+import {onAuthStateChanged} from "firebase/auth";
+import {auth} from "~/firebase/client";
 
 
 
 const signin =  () => {
     const handleSignIn = () => {}
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        // Only run this check on the /sign-in page
+        if (location.pathname === '/sign-in') {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // If user is signed in, redirect to home page.
+                    navigate('/');
+                }
+                // If no user, they can stay on the sign-in page.
+            });
+
+            // Cleanup subscription on component unmount
+            return () => unsubscribe();
+        }
+    }, [location.pathname, navigate]);
     return (
         <main className='auth'>
             <section className='size-full glassmorphism flex-center px-6'>
