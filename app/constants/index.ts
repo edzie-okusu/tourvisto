@@ -1,4 +1,5 @@
 import type { AxisModel } from "@syncfusion/ej2-react-charts";
+// import {formatDate} from "tough-cookie";
 
 export const sidebarItems = [
   {
@@ -689,11 +690,35 @@ export const RIGHT_CONFETTI = {
 //   right: 40px;
 // }
 
-export const user = {
-    name: 'Kwame',
-    email: 'contact@elletech.pro',
-    imageUrl: 'public/images/david.webp',
-}
+export const users = [
+    {
+        id: 1,
+        name: 'Kwame',
+        email: 'contact@elletech.pro',
+        imageUrl: 'public/images/david.webp',
+        dateJoined: '2025-01-03',
+        itineraryCreated: 0,
+        status:'admin'
+    },
+    {
+        id: 2,
+        name: 'Ama',
+        email: 'contact@elletech.pro',
+        imageUrl: 'public/images/david.webp',
+        dateJoined: '2025-01-03',
+        itineraryCreated: 0,
+        status:'admin'
+    },
+    {
+        id: 3,
+        name: 'Ekua',
+        email: 'contact@elletech.pro',
+        imageUrl: 'public/images/david.webp',
+        dateJoined: '2025-01-03',
+        itineraryCreated: 0,
+        status:'admin'
+    },
+]
 
 export const allTrips = [
     {

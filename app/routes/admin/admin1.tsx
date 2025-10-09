@@ -2,13 +2,34 @@ import React from "react";
 import Headers from "~/components/Headers";
 import TripCard from "~/components/TripCard";
 import StatsCard from "~/components/StatsCard";
-import {dashboardStats, user, allTrips} from "~/constants";
+import {dashboardStats, users, allTrips} from "~/constants";
 import {fetchUserProfile} from "~/firebase/auth";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "~/firebase/client";
+import {redirect} from "react-router";
+import type {Route} from './+types/admin1'
 
-const Dashboard = () => {
+export async function clientLoader() {
+    try {
+        const unsubscribe =  onAuthStateChanged(auth,(user) => {
+            if (!user) {
+                redirect('/sign-in')
+            }
 
+            return user;
+
+        })
+
+        return() => unsubscribe;
+    } catch (e) {
+        console.log('Error fetching user', e)
+    }
+}
+
+const Dashboard = async ({loaderData}: Route.ComponentProps) => {
+    await clientLoader();
+
+    const user = loaderData as unknown as User | null ;
     const {totalUsers, userRole, usersJoined,tripsCreated, totalTrips} = dashboardStats;
 
     return (

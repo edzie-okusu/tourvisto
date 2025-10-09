@@ -8,9 +8,10 @@ import {auth} from "~/firebase/client";
 export async function clientLoader() {
     try {
         const unsubscribe =  onAuthStateChanged(auth,(user) => {
-            if (user) {
-                redirect('/')
+            if (!user) {
+                redirect('/sign-in')
             }
+            return user;
 
         })
 
@@ -20,7 +21,8 @@ export async function clientLoader() {
     }
 }
 
-const Admin_Layout = () => {
+const Admin_Layout = async () => {
+    await clientLoader();
     return (
         <div className="admin-layout">
            <MobileSidebar />

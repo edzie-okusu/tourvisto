@@ -12,7 +12,7 @@ interface login {
 const provider = new GoogleAuthProvider();
 
 provider.setCustomParameters({
-    prompt: 'select account',
+    prompt: 'select_account',
 })
 
 export const loginWithGoogle = async (): Promise<User> => {
@@ -64,6 +64,32 @@ export const storeUserData = async (user:User, imageUrl:string | null) => {
     }
 }
 
+
+export const storeAdminData = async (user:User, imageUrl:string | null) => {
+    try {
+        const adminData = {
+            accountId: user.uid,
+            email: user.email,
+            name: user.displayName,
+            imageUrl: imageUrl,
+            dateJoined: serverTimestamp(),
+            lastUpdated: serverTimestamp(),
+            emailVerified: user.emailVerified,
+            providerData: user.providerData.map(profile => ({
+                providerId: profile.providerId,
+                uid: profile.uid,
+                displayName: profile.displayName,
+                email: profile.email,
+                photoURL: profile.photoURL,
+            }))
+        };
+
+        await setDoc(doc(db, 'admins', user.uid), adminData, {merge: true});
+    } catch (e) {
+        console.log(e)
+    }
+}
+
 export const getExistingUserByEmail = async (email: string) => {
     try {
         const usersRef = collection(db,'users')
@@ -105,6 +131,36 @@ export const handleGoogleSignIn = async () => {
     }
 }
 
+
+export const handleAdminGoogleSignIn = async () => {
+    try {
+        const user = await loginWithGoogle();
+
+        const userDocRef = doc(db, 'admins', user.uid);
+        const userSnapshot = await getDoc(userDocRef);
+
+        if (userSnapshot.exists()) {
+            // If user exists, just update their last login time and profile info
+            await updateDoc(userDocRef, {
+                lastUpdated: serverTimestamp(),
+                imageUrl: user.photoURL || null,
+                name: user.displayName,
+            });
+            console.log('Returning user data updated.');
+
+        } else {
+            // If new user, create the full document
+            await storeAdminData(user, user.photoURL || null);
+            console.log('New user data stored successfully');
+        }
+
+    } catch (error) {
+        console.error('An error occurred during Google Sign-In and data storage:', error);
+        throw error;
+    }
+}
+
+
 export const getUserById = async (userId:string) => {
     try {
         const userDocRef = await doc(db, 'users', userId);
@@ -142,4 +198,12 @@ export const getUserData = async (userId:string) => {
 
 export const fetchUserProfile = async (userId:string) => {
     return await getUserData(userId);
+}
+
+export const getAllUsers = async () => {
+    try {
+        const allUsers =  doc(db, 'users');
+    } catch (e) {
+         console.log(e)
+    }
 }

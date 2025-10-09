@@ -10,7 +10,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void}) => {
 
     const handleLogout = async () => {
         await logOutUser();
-        navigate('/sign-in')
+        navigate('/sign-in ')
     }
 
     return (
