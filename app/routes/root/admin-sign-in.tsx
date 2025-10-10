@@ -1,46 +1,46 @@
 import {Link, redirect, useLocation, useNavigate} from "react-router";
 import {ButtonComponent} from "@syncfusion/ej2-react-buttons";
-import {handleAdminGoogleSignIn, handleGoogleSignIn} from "~/firebase/auth";
-import {useEffect} from "react";
-import {onAuthStateChanged} from "firebase/auth";
-import {auth} from "~/firebase/client";
+import {handleAdminGoogleSignIn} from "~/firebase/auth";
+import type {User as FirebaseUser} from "firebase/auth";
+import {doc, getDoc} from "firebase/firestore";
+import {auth,db} from "~/firebase/client";
 
+export const clientLoader = async () => {
+    const firebaseUser = await new Promise<FirebaseUser | null>((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(
+            user => {
+                unsubscribe();
+                resolve(user);
+            },
+            reject
+        );
+    });
 
-export async function clientLoader() {
-    try {
-        const unsubscribe = onAuthStateChanged(auth,(user) => {
-            if (user) {
-                redirect('/')
-            }
-
-        })
-
-        return() => unsubscribe;
-    } catch (e) {
-        console.log('Error fetching user', e)
+    if (firebaseUser) {
+        const adminDocRef = doc(db, 'admins', firebaseUser.uid);
+        const adminSnapshot = await getDoc(adminDocRef);
+        if (adminSnapshot.exists()) {
+            return redirect('/dashboard');
+        }
     }
+
+    return null;
 }
 
-const adminSignIn =  () => {
-    const handleSignIn = () => {}
+
+const AdminSignIn =  () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // useEffect(() => {
-    //     // Only run this check on the /sign-in page
-    //     if (location.pathname === '/sign-in') {
-    //         const unsubscribe = onAuthStateChanged(auth, (user) => {
-    //             if (user) {
-    //                 // If user is signed in, redirect to home page.
-    //                 navigate('/');
-    //             }
-    //             // If no user, they can stay on the sign-in page.
-    //         });
-    //
-    //         // Cleanup subscription on component unmount
-    //         return () => unsubscribe();
-    //     }
-    // }, [location.pathname, navigate]);
+    const handleSignIn = async () => {
+        try {
+            await handleAdminGoogleSignIn();
+            navigate(location.state?.from || '/dashboard', { replace: true });
+        } catch (error) {
+            console.error("Admin sign-in failed:", error);
+        }
+    };
+
     return (
         <main className='auth'>
             <section className='size-full glassmorphism flex-center px-6'>
@@ -49,7 +49,7 @@ const adminSignIn =  () => {
                     <header className='header'>
                         <Link to='/'>
                             <img
-                                src='/public/icons/logo.svg'
+                                src='/icons/logo.svg'
                                 alt='logo'
                                 className='size-[30px]'
                             />
@@ -71,18 +71,20 @@ const adminSignIn =  () => {
 
                     <ButtonComponent
                         type='button'
-                        iconCss='e-search-icon'
-                        className='button-class !h-11 !w-full'
-                        onClick={handleAdminGoogleSignIn}
+                        cssClass='e-primary'
+                        className='!h-11 !w-full'
+                        onClick={handleSignIn}
                     >
-                        <img
-                            src='/public/icons/google.svg'
-                            className='size-5'
-                            alt='google'
-                        />
-                        <span className='p-18-semibold text-white'>
-                            Sign in with Google
-                        </span>
+                        <div className="flex items-center justify-center gap-2">
+                            <img
+                                src='/icons/google.svg'
+                                className='size-5'
+                                alt='google'
+                            />
+                            <span className='p-18-semibold text-white'>
+                                Sign in with Google
+                            </span>
+                        </div>
                     </ButtonComponent>
                 </div>
             </section>
@@ -90,4 +92,4 @@ const adminSignIn =  () => {
     )
 }
 
-export default adminSignIn
+export default AdminSignIn;

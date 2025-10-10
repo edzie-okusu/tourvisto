@@ -2,34 +2,50 @@ import React from "react";
 import Headers from "~/components/Headers";
 import TripCard from "~/components/TripCard";
 import StatsCard from "~/components/StatsCard";
-import {dashboardStats, users, allTrips} from "~/constants";
-import {fetchUserProfile} from "~/firebase/auth";
-import {onAuthStateChanged} from "firebase/auth";
-import {auth} from "~/firebase/client";
+import {dashboardStats, allTrips} from "~/constants";
 import {redirect} from "react-router";
 import type {Route} from './+types/admin1'
+import {getAdminData, getUserData} from "~/firebase/auth";
+import type {User} from "firebase/auth";
+import { auth, db } from "~/firebase/client";
+import { doc, getDoc } from "firebase/firestore";
 
-export async function clientLoader() {
-    try {
-        const unsubscribe =  onAuthStateChanged(auth,(user) => {
-            if (!user) {
-                redirect('/sign-in')
-            }
 
-            return user;
-
-        })
-
-        return() => unsubscribe;
-    } catch (e) {
-        console.log('Error fetching user', e)
-    }
+interface UserProfile {
+    id: string;
+    name?: string;
+    // Add any other properties you expect on the user object
 }
 
-const Dashboard = async ({loaderData}: Route.ComponentProps) => {
-    await clientLoader();
+export async function clientLoader() {
+    const user = await new Promise<User | null>((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(
+            user => {
+                unsubscribe();
+                resolve(user);
+            },
+            reject
+        );
+    });
 
-    const user = loaderData as unknown as User | null ;
+    if (!user) {
+        return redirect('/sign-in');
+    }
+
+    const adminDocRef = doc(db, 'admins', user.uid);
+    const adminSnapshot = await getDoc(adminDocRef);
+
+    if (!adminSnapshot.exists()) {
+        return redirect('/');
+    }
+
+    // const userData = await getUserData(user.uid);
+    const adminData = await getAdminData(user.uid);
+    return  adminData;
+}
+
+const Dashboard = ({loaderData}: Route.ComponentProps) => {
+    const user = loaderData as unknown as UserProfile | null;
     const {totalUsers, userRole, usersJoined,tripsCreated, totalTrips} = dashboardStats;
 
     return (
@@ -40,26 +56,26 @@ const Dashboard = async ({loaderData}: Route.ComponentProps) => {
             />
             <section className='flex flex-col gap-6'>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-                        <StatsCard
-                            headerTitle='Total Users'
-                            total={totalUsers}
-                            currentMonthCount={usersJoined.currentMonth}
-                            lastMonthCount={usersJoined.previousMonth}
-                        />
+                    <StatsCard
+                        headerTitle='Total Users'
+                        total={totalUsers}
+                        currentMonthCount={usersJoined.currentMonth}
+                        lastMonthCount={usersJoined.previousMonth}
+                    />
 
-                        <StatsCard
-                            headerTitle='Total Trip'
-                            total={totalTrips}
-                            currentMonthCount={tripsCreated.currentMonth}
-                            lastMonthCount={tripsCreated.previousMonth}
-                        />
+                    <StatsCard
+                        headerTitle='Total Trip'
+                        total={totalTrips}
+                        currentMonthCount={tripsCreated.currentMonth}
+                        lastMonthCount={tripsCreated.previousMonth}
+                    />
 
-                        <StatsCard
-                            headerTitle='Active Users'
-                            total={userRole.total}
-                            currentMonthCount={userRole.currentMonth}
-                            lastMonthCount={userRole.previousMonth}
-                        />
+                    <StatsCard
+                        headerTitle='Active Users'
+                        total={userRole.total}
+                        currentMonthCount={userRole.currentMonth}
+                        lastMonthCount={userRole.previousMonth}
+                    />
                 </div>
             </section>
 

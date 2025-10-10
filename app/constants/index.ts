@@ -1,4 +1,5 @@
 import type { AxisModel } from "@syncfusion/ej2-react-charts";
+import {formatDate} from "~/lib/utils";
 // import {formatDate} from "tough-cookie";
 
 export const sidebarItems = [
@@ -696,7 +697,7 @@ export const users = [
         name: 'Kwame',
         email: 'contact@elletech.pro',
         imageUrl: 'public/images/david.webp',
-        dateJoined: '2025-01-03',
+        dateJoined: formatDate('2025-01-03'),
         itineraryCreated: 0,
         status:'admin'
     },
@@ -705,7 +706,7 @@ export const users = [
         name: 'Ama',
         email: 'contact@elletech.pro',
         imageUrl: 'public/images/david.webp',
-        dateJoined: '2025-01-03',
+        dateJoined: formatDate('2025-01-03'),
         itineraryCreated: 0,
         status:'admin'
     },
@@ -714,7 +715,7 @@ export const users = [
         name: 'Ekua',
         email: 'contact@elletech.pro',
         imageUrl: 'public/images/david.webp',
-        dateJoined: '2025-01-03',
+        dateJoined: formatDate('2025-01-03'),
         itineraryCreated: 0,
         status:'admin'
     },

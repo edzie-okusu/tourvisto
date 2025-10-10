@@ -140,27 +140,37 @@ export const handleAdminGoogleSignIn = async () => {
         const userSnapshot = await getDoc(userDocRef);
 
         if (userSnapshot.exists()) {
-            // If user exists, just update their last login time and profile info
             await updateDoc(userDocRef, {
                 lastUpdated: serverTimestamp(),
                 imageUrl: user.photoURL || null,
-                name: user.displayName,
             });
-            console.log('Returning user data updated.');
-
+            console.log('Returning admin data updated.');
+            return await getAdminData(user.uid);
         } else {
-            // If new user, create the full document
             await storeAdminData(user, user.photoURL || null);
             console.log('New user data stored successfully');
         }
-
     } catch (error) {
-        console.error('An error occurred during Google Sign-In and data storage:', error);
+        console.error('Google Sign-In Error:', error);
         throw error;
     }
 }
 
+export const getAdminById = async (userId:string) => {
+    try {
+        const userDocRef = await doc(db, 'admins', userId);
+        const userSnapshot = await getDoc(userDocRef)
 
+        if(!userSnapshot.exists()) {
+            throw new Error('Admin not found');
+        }
+
+        return userSnapshot;
+    } catch (error) {
+        console.error(error)
+        throw error;
+    }
+}
 export const getUserById = async (userId:string) => {
     try {
         const userDocRef = await doc(db, 'users', userId);
@@ -177,16 +187,39 @@ export const getUserById = async (userId:string) => {
     }
 }
 
+export const getAdminData = async (userId:string) => {
+    try {
+        const userSnapshot = await getAdminById(userId);
+        if(userSnapshot.exists()) {
+            const userData = userSnapshot.data()
+            const dateJoined = userData.dateJoined?.toDate ? userData.dateJoined.toDate().toISOString() : userData.dateJoined;
+
+            return {
+                id: userSnapshot.id,
+                ...userData,
+                dateJoined: dateJoined,
+            };
+        }
+
+        return null;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 export const getUserData = async (userId:string) => {
     try {
         const userSnapshot = await getUserById(userId);
         if(userSnapshot.exists()) {
             const userData = userSnapshot.data()
+            const dateJoined = userData.dateJoined?.toDate ? userData.dateJoined.toDate().toISOString() : userData.dateJoined;
+
             return {
-                id:userSnapshot.id,
+                id: userSnapshot.id,
                 ...userData,
-                dateJoined: userData.dateJoined?.toISOString() || userData.dateJoined
-            } ;
+                dateJoined: dateJoined,
+            };
         }
 
         return null;
@@ -202,7 +235,15 @@ export const fetchUserProfile = async (userId:string) => {
 
 export const getAllUsers = async () => {
     try {
-        const allUsers =  doc(db, 'users');
+        const usersCollection = collection(db, 'users');
+        const usersSnapshot = await getDocs(usersCollection);
+        const allUsers = usersSnapshot.docs.map(doc => doc.data());
+
+        const adminsCollection = collection(db, 'admins');
+        const adminsSnapshot = await getDocs(adminsCollection);
+        const allAdmins = adminsSnapshot.docs.map(doc => doc.data());
+
+        return {allAdmins, allUsers}
     } catch (e) {
          console.log(e)
     }
