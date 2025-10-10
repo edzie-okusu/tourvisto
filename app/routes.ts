@@ -5,7 +5,9 @@ export default [
     route('admin-sign-in', 'routes/root/admin-sign-in.tsx'),
     layout('routes/admin/admin-layout.tsx', [
         route('dashboard', 'routes/admin/admin1.tsx'),
-        route('all-users', 'routes/admin/all-users.tsx')
+        route('all-users', 'routes/admin/all-users.tsx'),
+        route('trips', 'routes/admin/trips.tsx'),
+        route('trips/create', 'routes/admin/create-trip.tsx')
     ]) 
     
 
