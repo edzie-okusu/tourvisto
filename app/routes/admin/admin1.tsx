@@ -17,32 +17,32 @@ interface UserProfile {
     // Add any other properties you expect on the user object
 }
 
-// export async function clientLoader() {
-//     const user = await new Promise<User | null>((resolve, reject) => {
-//         const unsubscribe = auth.onAuthStateChanged(
-//             user => {
-//                 unsubscribe();
-//                 resolve(user);
-//             },
-//             reject
-//         );
-//     });
-//
-//     if (!user) {
-//         return redirect('/sign-in');
-//     }
-//
-//     const adminDocRef = doc(db, 'admins', user.uid);
-//     const adminSnapshot = await getDoc(adminDocRef);
-//
-//     if (!adminSnapshot.exists()) {
-//         return redirect('/');
-//     }
-//
-//     // const userData = await getUserData(user.uid);
-//     const adminData = await getAdminData(user.uid);
-//     return  adminData;
-// }
+export async function clientLoader() {
+    const user = await new Promise<User | null>((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(
+            user => {
+                unsubscribe();
+                resolve(user);
+            },
+            reject
+        );
+    });
+
+    if (!user) {
+        return redirect('/sign-in');
+    }
+
+    const adminDocRef = doc(db, 'admins', user.uid);
+    const adminSnapshot = await getDoc(adminDocRef);
+
+    if (!adminSnapshot.exists()) {
+        return redirect('/');
+    }
+
+    // const userData = await getUserData(user.uid);
+    const adminData = await getAdminData(user.uid);
+    return  adminData;
+}
 
 const Dashboard = ({loaderData}: Route.ComponentProps) => {
     const user = loaderData as unknown as UserProfile | null;

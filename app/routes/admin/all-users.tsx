@@ -9,31 +9,31 @@ import { auth, db } from "~/firebase/client";
 import { doc, getDoc } from "firebase/firestore";
 import type { User } from "firebase/auth";
 
-// export const clientLoader = async () => {
-//     const user = await new Promise<User | null>((resolve, reject) => {
-//         const unsubscribe = auth.onAuthStateChanged(
-//             user => {
-//                 unsubscribe();
-//                 resolve(user);
-//             },
-//             reject
-//         );
-//     });
-//
-//     if (!user) {
-//         return redirect('/sign-in');
-//     }
-//
-//     const adminDocRef = doc(db, 'admins', user.uid);
-//     const adminSnapshot = await getDoc(adminDocRef);
-//
-//     if (!adminSnapshot.exists()) {
-//         return redirect('/');
-//     }
-//
-//     const users = await getAllUsers();
-//     return users;
-// }
+export const clientLoader = async () => {
+    const user = await new Promise<User | null>((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(
+            user => {
+                unsubscribe();
+                resolve(user);
+            },
+            reject
+        );
+    });
+
+    if (!user) {
+        return redirect('/sign-in');
+    }
+
+    const adminDocRef = doc(db, 'admins', user.uid);
+    const adminSnapshot = await getDoc(adminDocRef);
+
+    if (!adminSnapshot.exists()) {
+        return redirect('/');
+    }
+
+    const users = await getAllUsers();
+    return users;
+}
 
 const All_Users = ({loaderData}: Route.ComponentProps) => {
     const { allUsers = [], allAdmins = [] } = loaderData || {};

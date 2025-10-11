@@ -1,7 +1,14 @@
 import Headers from "../../components/Headers";
-import React from "react";
+import React, {useState} from "react";
 import {ComboBoxComponent} from "@syncfusion/ej2-react-dropdowns";
 import type {Route} from './+types/create-trip'
+import {comboBoxItems, selectItems} from "~/constants";
+import {cn, formatKey} from "~/lib/utils";
+import {LayerDirective, LayersDirective, MapsComponent} from "@syncfusion/ej2-react-maps";
+import {ButtonComponent} from "@syncfusion/ej2-react-buttons";
+import type {User} from "firebase/auth";
+import {auth} from "~/firebase/client";
+
 
 export const loader = async () => {
     //const response = await fetch('https://restcountries.com/v3.1/all')
@@ -20,14 +27,80 @@ export const loader = async () => {
     }));
 }
 const createTrip = ({loaderData}: Route.ComponentProps) => {
-    const handleSubmit = async () => {}
-    const handleChange=  (keys: keyof TripFormData, value: string |number) => {}
     const countries = loaderData as Country[]
+
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const [formData, setFormData] = useState<TripFormData>({
+        country: countries[0]?.name || '',
+        travelStyle: '',
+        interest:'',
+        budget: '',
+        duration: 0,
+        groupType: ''
+    })
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+
+        if(
+            !formData.country ||
+            !formData.travelStyle ||
+            !formData.interest ||
+            !formData.budget ||
+            !formData.groupType
+        ) {
+            setError("Please fill all fields");
+            setLoading(false);
+            return;
+        }
+
+        if(formData.duration < 1 || formData.duration >  10) {
+            setError('Duration must be between 1 and 10 days');
+            setLoading(false);
+            return;
+        }
+
+        const user = await new Promise<User | null>((resolve, reject) => {
+            const unsubscribe = auth.onAuthStateChanged(
+                user => {
+                    unsubscribe();
+                    resolve(user);
+                },
+                reject
+            );
+        });
+        if(!user) {
+            console.error("User not authenticated.");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            console.log('user', user);
+            console.log('formData', formData);
+        } catch (e) {
+
+        }
+    }
+    const handleChange=  (key: keyof TripFormData, value: string |number) => {
+        setFormData({...formData, [key]: value})
+    }
+
     const countryData = countries.map((country) => ({
         text: country.name,
         value: country.value,
     }))
-    console.log(countries)
+
+    const mapData = [
+        {
+            country: formData.country,
+            color: '#EA382E',
+            coordinates: countries.find((c: Country) => c.name === formData.country)?.coordinates || [],
+        }
+    ]
 
     return (
         <main className='flex flex-col gap-10 pb-20 wrapper'>
@@ -76,6 +149,82 @@ const createTrip = ({loaderData}: Route.ComponentProps) => {
                             onChange={(e)=> handleChange('duration', Number(e.target.value))}
                         />
                     </div>
+
+                    {selectItems.map((key)=>(
+                        <div>
+
+                            <label htmlFor={key}>{formatKey(key)}</label>
+
+                            <ComboBoxComponent
+                               id={key}
+                               dataSource={comboBoxItems[key].map((item)=>({
+                                   text: item,
+                                    value: item
+                               }))}
+                               className='combo-box'
+                               fields={{text:'text', value:'value'}}
+                               placeholder={`Select ${formatKey(key)}`}
+                               change={(e: {value: string | undefined}) => {
+                                   if(e.value){
+                                       handleChange(key, e.value)
+                                   }
+                               }}
+                               allowFiltering
+                               filtering={(e)=>{
+                                   const query = e.text.toLowerCase();
+                                   e.updateData(comboBoxItems[key].filter((item) => item.toLowerCase().includes(query)).map(((item ) =>({
+                                       text: item,
+                                       value: item
+                                   }))))
+                               }}
+                            />
+                        </div>
+                        ))}
+
+                    <div>
+                        <label htmlFor='location'>
+                            Location on the world map
+                        </label>
+
+                        <MapsComponent>
+                            <LayersDirective>
+                                <LayerDirective
+                                    // shapeData={world_map}
+                                  dataSource={mapData}
+                                  shapePropertyPath='name'
+                                  shapeDataPath='country'
+                                  shapeSettings={{colorValuePath:'color', fill:'#e5e5e5'}}
+                                />
+                            </LayersDirective>
+                        </MapsComponent>
+                    </div>
+
+                    <div className='bg-gray-200 h-px w-full' />
+                    {error && (
+                        <div className='error'>
+                            <p>
+                                {error}
+                            </p>
+
+                        </div>
+                    )}
+
+                    <footer>
+                        <ButtonComponent
+                            type='submit'
+                            disabled={loading}
+                        >
+                            <img
+                                src={`/public/icons/${loading ? 'loader.svg': 'magic-star.svg'}`}
+                                alt='Generate Trip'
+                                className={cn('size-5', {'animate-spin': loading})}
+                            />
+
+                            <span className='p-16-semibold text-white'>
+                                {loading ? 'Generating...': 'Generate Trip'}
+                            </span>
+                        </ButtonComponent>
+                    </footer>
                 </form>
 
             </section>
