@@ -1,6 +1,21 @@
 import type {ActionFunctionArgs} from "react-router";
 import {parseMarkdownToJson} from "~/lib/utils";
 import {GoogleGenerativeAI} from "@google/generative-ai";
+// import {admin} from "~/firebase/admin";
+import {doc, serverTimestamp, setDoc} from "@firebase/firestore";
+import {db} from "~/firebase/client";
+
+const saveTripToFirestore = async (tripData: any, userId: string, imageUrls: string[]) => {
+    const tripWithUser = {
+        ...tripData,
+        userId,
+        imageUrls,
+        createdAt:serverTimestamp(),
+    };
+    // const tripRef = await db.collection("trips").add(tripWithUser);
+    const tripRef = await setDoc(doc(db, 'trips', userId), tripWithUser, {merge: true})
+    return tripRef;
+}
 
 export const action = async ({request}: ActionFunctionArgs) => {
     const {
@@ -75,7 +90,10 @@ export const action = async ({request}: ActionFunctionArgs) => {
 
         const imageUrls = (await imageResponse.json()).results.slice(0,3).map((result:any)=> result.url?.regular || null)
 
-    //     create trip in db
+        //     create trip in db
+        const tripId = await saveTripToFirestore(trip, userId, imageUrls);
+        console.log(`Trip saved with ID: ${tripId}`);
+
 
     } catch (e) {
         console.error('An error occurred generating travel plan:', e);

@@ -12,15 +12,28 @@ import { world_map } from "~/constants/world_map";
 
 
 export const loader = async () => {
-    const response = await fetch('https://restcountries.com/v3.1/all')
-    const data = await response.json();
-    return data.map((country:any) => ({
-        name: country.flag + country.name.common,
-        coordinates: country.latlng,
-        value:country.name.common,
-        openStreetMap: country.maps?.openStreetMap,
-    }));
-}
+    try {
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,latlng,flag,maps');
+        if (!response.ok) {
+            console.error('Failed to fetch countries:', response.statusText);
+            return [];
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+            console.error('Fetched data is not an array:', data);
+            return [];
+        }
+        return data.map((country: any) => ({
+            name: country.flag + country.name.common,
+            coordinates: country.latlng,
+            value: country.name.common,
+            openStreetMap: country.maps?.openStreetMap,
+        }));
+    } catch (error) {
+        console.error('Error fetching countries:', error);
+        return [];
+    }
+};
 const createTrip = ({loaderData}: Route.ComponentProps) => {
     const countries = loaderData as Country[]
 
@@ -204,19 +217,13 @@ const createTrip = ({loaderData}: Route.ComponentProps) => {
                         </div>
                     )}
 
-                    <footer>
-                        <ButtonComponent
-                            type='submit'
-                            disabled={loading}
+                    <footer className="px-6 w-full">
+                        <ButtonComponent type="submit"
+                                         className="button-class !h-12 !w-full" disabled={loading}
                         >
-                            <img
-                                src={`/public/icons/${loading ? 'loader.svg': 'magic-star.svg'}`}
-                                alt='Generate Trip'
-                                className={cn('size-5', {'animate-spin': loading})}
-                            />
-
-                            <span className='p-16-semibold text-white'>
-                                {loading ? 'Generating...': 'Generate Trip'}
+                            <img src={`/public/icons/${loading ? 'loader.svg' : 'magic-star.svg'}`} className={cn("size-5", {'animate-spin': loading})} />
+                            <span className="p-16-semibold text-white">
+                                {loading ? 'Generating...' : 'Generate Trip'}
                             </span>
                         </ButtonComponent>
                     </footer>

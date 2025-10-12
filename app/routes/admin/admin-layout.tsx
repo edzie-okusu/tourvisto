@@ -35,7 +35,7 @@ export async function clientLoader() {
     // Child routes are responsible for fetching their own data.
     const adminData = await getAdminData(user.uid);
     const allUsers = await  getAllUsers();
-    return {adminData, allUsers};
+    return { user: adminData, allUsers }
 }
 const Admin_Layout = () => {
     return (
