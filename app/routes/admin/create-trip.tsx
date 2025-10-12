@@ -8,17 +8,12 @@ import {LayerDirective, LayersDirective, MapsComponent} from "@syncfusion/ej2-re
 import {ButtonComponent} from "@syncfusion/ej2-react-buttons";
 import type {User} from "firebase/auth";
 import {auth} from "~/firebase/client";
+import { world_map } from "~/constants/world_map";
 
 
 export const loader = async () => {
-    //const response = await fetch('https://restcountries.com/v3.1/all')
-    const data = [
-        {
-            name: 'Ghana',
-            latlng: '123123',
-
-        }
-    ]//await response.json();
+    const response = await fetch('https://restcountries.com/v3.1/all')
+    const data = await response.json();
     return data.map((country:any) => ({
         name: country.flag + country.name.common,
         coordinates: country.latlng,
@@ -189,7 +184,7 @@ const createTrip = ({loaderData}: Route.ComponentProps) => {
                         <MapsComponent>
                             <LayersDirective>
                                 <LayerDirective
-                                    // shapeData={world_map}
+                                    shapeData={world_map}
                                   dataSource={mapData}
                                   shapePropertyPath='name'
                                   shapeDataPath='country'
