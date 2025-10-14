@@ -9,6 +9,7 @@ import {ButtonComponent} from "@syncfusion/ej2-react-buttons";
 import type {User} from "firebase/auth";
 import {auth} from "~/firebase/client";
 import { world_map } from "~/constants/world_map";
+import {useNavigate} from "react-router";
 
 
 export const loader = async () => {
@@ -36,7 +37,7 @@ export const loader = async () => {
 };
 const createTrip = ({loaderData}: Route.ComponentProps) => {
     const countries = loaderData as Country[]
-
+    const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -87,6 +88,24 @@ const createTrip = ({loaderData}: Route.ComponentProps) => {
         }
 
         try {
+            const response = await fetch('/api/createTrip', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    country: formData.country || "",
+                    numberOfDays: formData.duration,
+                    travelStyle: formData.travelStyle,
+                    interests: formData.interest,
+                    budget: formData.budget,
+                    groupType: formData.groupType,
+                    userId:user.uid
+                }),
+            })
+            const result:CreateTripResponse= await response.json();
+            if(result?.id) navigate(`/trips/${result.id}`)
+            else console.log('failed to generate trip')
             console.log('user', user);
             console.log('formData', formData);
         } catch (e) {

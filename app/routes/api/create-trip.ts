@@ -1,15 +1,14 @@
-import type {ActionFunctionArgs} from "react-router";
+import {type ActionFunctionArgs, data} from "react-router";
 import {parseMarkdownToJson} from "~/lib/utils";
 import {GoogleGenerativeAI} from "@google/generative-ai";
 // import {admin} from "~/firebase/admin";
 import {doc, serverTimestamp, setDoc} from "@firebase/firestore";
 import {db} from "~/firebase/client";
 
-const saveTripToFirestore = async (tripData: any, userId: string, imageUrls: string[]) => {
+const saveTripToFirestore = async (tripData: any, userId: string, ) => {
     const tripWithUser = {
         ...tripData,
         userId,
-        imageUrls,
         createdAt:serverTimestamp(),
     };
     // const tripRef = await db.collection("trips").add(tripWithUser);
@@ -84,15 +83,15 @@ export const action = async ({request}: ActionFunctionArgs) => {
 
         const textResult = await genAI.getGenerativeModel({model: 'gemini-2.0-flash'}).generateContent([prompt]);
         const trip = parseMarkdownToJson(textResult.response.text())
-        const imageResponse = await fetch(
-            `https://api.unsplash.com/search/photos?query=${country} ${interests}&client_id=${unsplashApiKey}`
-        )
+        // const imageResponse = await fetch(
+        //     `https://api.unsplash.com/search/photos?query=${country} ${interests}&client_id=${unsplashApiKey}`
+        // )
 
-        const imageUrls = (await imageResponse.json()).results.slice(0,3).map((result:any)=> result.url?.regular || null)
+        // const imageUrls = (await imageResponse.json()).results.slice(0,3).map((result:any)=> result.url?.regular || null)
 
         //     create trip in db
-        const tripId = await saveTripToFirestore(trip, userId, imageUrls);
-        console.log(`Trip saved with ID: ${tripId}`);
+        const tripId = await saveTripToFirestore(trip, userId);
+        return data(tripId);
 
 
     } catch (e) {
